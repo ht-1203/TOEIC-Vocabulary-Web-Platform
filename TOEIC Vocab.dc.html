@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="image-slot.js"></script>
+<style>
+  :root{--bg:#f4f3ef;--surface:#ffffff;--soft:#faf9f6;--ink:#17161a;--ink-rgb:23,22,26;--header:rgba(244,243,239,.82);--hero:#17161a}
+  body.dark{--bg:#141317;--surface:#201e27;--soft:#191820;--ink:#f1f0ec;--ink-rgb:238,236,231;--header:rgba(20,19,23,.85);--hero:#0e0d12}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  input,textarea,button{font-family:inherit;color:inherit}
+  ::placeholder{color:rgba(var(--ink-rgb),.42)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.14);border-radius:8px;border:3px solid var(--bg)}
+  @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column">
+
+  <header style="position:sticky;top:0;z-index:20;background:var(--header);backdrop-filter:blur(12px);border-bottom:1px solid rgba(var(--ink-rgb),.08)">
+    <div style="max-width:1120px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div onClick="{{ goHome }}" style="display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none">
+        <div style="width:34px;height:34px;border-radius:9px;background:{{ accent }};display:flex;align-items:center;justify-content:center;color:#fff;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px;letter-spacing:-.5px">TC</div>
+        <div style="line-height:1.05">
+          <div style="font-weight:600;font-size:15px;white-space:nowrap">คลังคำศัพท์ TOEIC</div>
+          <div style="font-size:11px;color:rgba(var(--ink-rgb),.5);font-family:'IBM Plex Mono',monospace">jam-ngai · aan-ngai</div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:8px"></div>
+      <button onClick="{{ goStats }}" style="border:none;background:none;font:inherit;font-size:14px;font-weight:500;color:rgba(var(--ink-rgb),.62);cursor:pointer;padding:8px 10px;border-radius:8px;white-space:nowrap">สถิติ</button>
+      <button onClick="{{ goReading }}" style="border:none;background:none;font:inherit;font-size:14px;font-weight:500;color:rgba(var(--ink-rgb),.62);cursor:pointer;padding:8px 10px;border-radius:8px;white-space:nowrap">ฝึกอ่าน</button>
+      <button onClick="{{ goHome }}" style="border:none;background:none;font:inherit;font-size:14px;font-weight:500;color:rgba(var(--ink-rgb),.62);cursor:pointer;padding:8px 10px;border-radius:8px;white-space:nowrap">หน้าแรก</button>
+      <button onClick="{{ toggleDark }}" title="สลับโหมดสว่าง/มืด" style="border:1px solid rgba(var(--ink-rgb),.12);background:var(--surface);cursor:pointer;width:38px;height:38px;border-radius:9px;font-size:16px;flex:none">{{ darkIcon }}</button>
+      <button onClick="{{ startReviewAll }}" style="border:1px solid rgba(var(--ink-rgb),.12);background:var(--surface);font:inherit;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;padding:8px 14px;border-radius:9px;display:flex;align-items:center;gap:8px;white-space:nowrap;flex:none">
+        ทบทวนวันนี้
+        <span style="min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:{{ accent }};color:#fff;font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace">{{ dueCount }}</span>
+      </button>
+    </div>
+  </header>
+
+  <main style="flex:1;max-width:1120px;width:100%;margin:0 auto;padding:26px 22px 60px">
+
+    <!-- ============ HOME ============ -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <section style="animation:cardIn .4s ease both">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:22px">
+          <div style="background:var(--hero);color:#fff;border-radius:18px;padding:30px 32px;position:relative;overflow:hidden">
+            <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5)">Daily Review</div>
+            <div style="font-size:30px;font-weight:600;margin:12px 0 6px;line-height:1.15">คุณมี <span style="color:{{ accentLight }}">{{ dueCount }} คำ</span><br>ที่ถึงเวลาทบทวน</div>
+            <div style="font-size:14px;color:rgba(255,255,255,.62);margin-bottom:22px">ทบทวนแบบ spaced repetition — จำได้แน่นขึ้นทุกวัน</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button onClick="{{ startReviewAll }}" style="border:none;background:{{ accent }};color:#fff;font:inherit;font-weight:600;font-size:15px;padding:12px 22px;border-radius:11px;cursor:pointer">เริ่มทบทวน →</button>
+              <button onClick="{{ startAllShuffled }}" style="border:1px solid rgba(255,255,255,.22);background:transparent;color:#fff;font:inherit;font-weight:600;font-size:15px;padding:12px 20px;border-radius:11px;cursor:pointer">สุ่มทั้งคลัง</button>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:18px;padding:26px;display:flex;flex-direction:column;justify-content:center;gap:18px">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="position:relative;width:74px;height:74px;flex:none">
+                <div style="width:74px;height:74px;border-radius:50%;background:conic-gradient({{ accent }} calc({{ learnedPct }}*1%),rgba(var(--ink-rgb),.08) 0)"></div>
+                <div style="position:absolute;inset:9px;background:var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px">{{ learnedPct }}%</div>
+              </div>
+              <div>
+                <div style="font-size:13px;color:rgba(var(--ink-rgb),.55)">เรียนรู้แล้ว</div>
+                <div style="font-size:20px;font-weight:600"><span>{{ learnedCount }}</span> <span style="color:rgba(var(--ink-rgb),.4);font-weight:400">/ {{ totalWords }} คำ</span></div>
+              </div>
+            </div>
+            <div style="height:1px;background:rgba(var(--ink-rgb),.08)"></div>
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div style="flex:1;min-width:70px"><div style="font-size:24px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ streak }}</div><div style="font-size:12px;color:rgba(var(--ink-rgb),.55)">วันต่อเนื่อง</div></div>
+              <div style="flex:1;min-width:70px"><div style="font-size:24px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ dueCount }}</div><div style="font-size:12px;color:rgba(var(--ink-rgb),.55)">รอทบทวน</div></div>
+              <div style="flex:1;min-width:70px"><div style="font-size:24px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ totalWords }}</div><div style="font-size:12px;color:rgba(var(--ink-rgb),.55)">คำทั้งหมด</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div onClick="{{ goStats }}" style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:15px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:18px;cursor:pointer">
+          <div style="position:relative;width:56px;height:56px;flex:none">
+            <div style="width:56px;height:56px;border-radius:50%;background:conic-gradient({{ accent }} calc({{ goalPct }}*1%),rgba(var(--ink-rgb),.1) 0)"></div>
+            <div style="position:absolute;inset:7px;background:var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px">{{ goalPct }}%</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:15px">เป้าหมายวันนี้ · {{ goalToday }}/{{ goalTarget }} คำ</div>
+            <sc-if value="{{ goalDone }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:oklch(0.55 0.14 155)">🎉 ทำได้ตามเป้าแล้ววันนี้ เก่งมาก!</div></sc-if>
+            <sc-if value="{{ goalRemain }}" hint-placeholder-val="{{ true }}"><div style="font-size:13px;color:rgba(var(--ink-rgb),.55)">อีก {{ goalRemain }} คำก็ถึงเป้าวันนี้ — สู้ ๆ</div></sc-if>
+          </div>
+          <div style="font-size:13px;color:{{ accent }};font-weight:500;white-space:nowrap">ดูสถิติ →</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:11px;margin-bottom:16px">
+          <button onClick="{{ startDictAll }}" style="border:1px solid rgba(var(--ink-rgb),.1);background:var(--surface);border-radius:13px;padding:15px 16px;cursor:pointer;text-align:left;font:inherit" style-hover="box-shadow:0 8px 20px rgba(var(--ink-rgb),.08)">
+            <div style="font-size:20px">✎</div>
+            <div style="font-weight:600;font-size:14px;margin-top:6px">ฟังแล้วสะกด</div>
+            <div style="font-size:12px;color:rgba(var(--ink-rgb),.5)">Dictation ฝึกพาร์ต Listening</div>
+          </button>
+          <button onClick="{{ startStarred }}" style="border:1px solid rgba(var(--ink-rgb),.1);background:var(--surface);border-radius:13px;padding:15px 16px;cursor:pointer;text-align:left;font:inherit" style-hover="box-shadow:0 8px 20px rgba(var(--ink-rgb),.08)">
+            <div style="font-size:20px;color:oklch(0.72 0.15 75)">★</div>
+            <div style="font-weight:600;font-size:14px;margin-top:6px">คำติดดาว <span style="color:rgba(var(--ink-rgb),.45);font-family:'IBM Plex Mono',monospace">{{ starredCount }}</span></div>
+            <div style="font-size:12px;color:rgba(var(--ink-rgb),.5)">ทบทวนคำยากที่บันทึกไว้</div>
+          </button>
+          <button onClick="{{ goReading }}" style="border:1px solid rgba(var(--ink-rgb),.1);background:var(--surface);border-radius:13px;padding:15px 16px;cursor:pointer;text-align:left;font:inherit" style-hover="box-shadow:0 8px 20px rgba(var(--ink-rgb),.08)">
+            <div style="font-size:20px">📖</div>
+            <div style="font-weight:600;font-size:14px;margin-top:6px">ฝึกอ่าน</div>
+            <div style="font-size:12px;color:rgba(var(--ink-rgb),.5)">เรื่องสั้น แตะคำดูความหมาย</div>
+          </button>
+        </div>
+        <div style="position:relative;margin-bottom:26px">
+          <input value="{{ query }}" onInput="{{ onSearch }}" placeholder="ค้นหาคำศัพท์ ภาษาอังกฤษหรือความหมายไทย…" style="width:100%;border:1px solid rgba(var(--ink-rgb),.12);background:var(--surface);border-radius:13px;padding:15px 18px 15px 46px;font-size:15px;outline:none">
+          <span style="position:absolute;left:17px;top:50%;transform:translateY(-50%);font-size:17px;opacity:.5">🔍</span>
+        </div>
+
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 14px">
+          <h2 style="margin:0;font-size:18px;font-weight:600">คลังคำศัพท์ A–Z</h2>
+          <span style="font-size:13px;color:rgba(var(--ink-rgb),.5);font-family:'IBM Plex Mono',monospace">แตะตัวอักษรเพื่อเปิด</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px">
+          <sc-for list="{{ letters }}" as="L" hint-placeholder-count="26">
+            <div onClick="{{ L.open }}" style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:13px;padding:15px 16px;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease;opacity:{{ L.op }}" style-hover="transform:translateY(-3px);box-shadow:0 10px 24px rgba(var(--ink-rgb),.09)">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:24px;color:{{ L.dot }}">{{ L.letter }}</span>
+                <span style="font-size:12px;color:rgba(var(--ink-rgb),.45);font-family:'IBM Plex Mono',monospace">{{ L.count }}</span>
+              </div>
+              <div style="height:5px;border-radius:5px;background:rgba(var(--ink-rgb),.07);overflow:hidden;margin-top:12px"><div style="height:100%;width:{{ L.pct }}%;background:{{ L.dot }};border-radius:5px"></div></div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ============ BROWSE ============ -->
+    <sc-if value="{{ isBrowse }}" hint-placeholder-val="{{ false }}">
+      <section style="animation:cardIn .3s ease both">
+        <button onClick="{{ goHome }}" style="border:none;background:none;font:inherit;font-size:14px;color:rgba(var(--ink-rgb),.55);cursor:pointer;padding:4px 0;margin-bottom:12px">← หน้าแรก</button>
+        <div style="position:relative;margin-bottom:18px">
+          <input value="{{ query }}" onInput="{{ onSearch }}" placeholder="ค้นหาคำศัพท์…" style="width:100%;border:1px solid rgba(var(--ink-rgb),.12);background:var(--surface);border-radius:13px;padding:14px 18px 14px 46px;font-size:15px;outline:none">
+          <span style="position:absolute;left:17px;top:50%;transform:translateY(-50%);font-size:17px;opacity:.5">🔍</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin-bottom:16px">
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <h1 style="margin:0;font-size:24px;font-weight:600">{{ browseTitle }}</h1>
+            <span style="font-size:13px;color:rgba(var(--ink-rgb),.5);font-family:'IBM Plex Mono',monospace">{{ browseCount }} คำ</span>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ startFlash }}" style="border:none;background:{{ accent }};color:#fff;font:inherit;font-weight:600;font-size:14px;padding:10px 18px;border-radius:11px;cursor:pointer">▸ Flashcard</button>
+            <button onClick="{{ startQuiz }}" style="border:1px solid rgba(var(--ink-rgb),.13);background:var(--surface);font:inherit;font-weight:600;font-size:14px;padding:10px 18px;border-radius:11px;cursor:pointer">🎯 Quiz</button>
+            <button onClick="{{ startDict }}" style="border:1px solid rgba(var(--ink-rgb),.13);background:var(--surface);font:inherit;font-weight:600;font-size:14px;padding:10px 18px;border-radius:11px;cursor:pointer">✎ Dictation</button>
+          </div>
+        </div>
+        <sc-if value="{{ showAlpha }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px">
+            <sc-for list="{{ alphaChips }}" as="c" hint-placeholder-count="26">
+              <button onClick="{{ c.open }}" style="min-width:34px;height:34px;border-radius:9px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};font:inherit;font-weight:600;font-size:14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">{{ c.letter }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px">
+          <sc-for list="{{ words }}" as="w" hint-placeholder-count="10">
+            <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:12px;padding:13px 15px;display:flex;align-items:center;gap:13px">
+              <button onClick="{{ w.play }}" title="ฟังเสียง" style="width:36px;height:36px;flex:none;border-radius:9px;border:1px solid rgba(var(--ink-rgb),.1);background:var(--soft);cursor:pointer;font-size:14px">🔊</button>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:baseline;gap:7px">
+                  <span style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:15px">{{ w.en }}</span>
+                  <span style="font-size:11px;color:rgba(var(--ink-rgb),.4);font-family:'IBM Plex Mono',monospace">{{ w.pos }}</span>
+                </div>
+                <div style="font-size:13.5px;color:rgba(var(--ink-rgb),.62);text-wrap:pretty">{{ w.th }}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex:none">
+                <button onClick="{{ w.markKnown }}" title="จำได้แล้ว" style="border:1px solid {{ w.knownBorder }};background:{{ w.knownBg }};color:{{ w.knownFg }};cursor:pointer;font:inherit;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;white-space:nowrap">✓ จำได้</button>
+                <button onClick="{{ w.markReview }}" title="ต้องทบทวน" style="border:1px solid {{ w.reviewBorder }};background:{{ w.reviewBg }};color:{{ w.reviewFg }};cursor:pointer;font:inherit;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;white-space:nowrap">↻ ทวน</button>
+                <button onClick="{{ w.star }}" title="ติดดาวคำยาก" style="border:none;background:none;cursor:pointer;font-size:18px;color:{{ w.starColor }};padding:2px 2px">{{ w.starIcon }}</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ capped }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;color:rgba(var(--ink-rgb),.45);font-size:13px;margin-top:18px;font-family:'IBM Plex Mono',monospace">แสดง {{ browseShown }} จาก {{ browseCount }} คำ — พิมพ์ค้นหาให้แคบลง หรือกด Flashcard เพื่อฝึกทั้งชุด</div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <!-- ============ STUDY / FLASHCARD ============ -->
+    <sc-if value="{{ isStudy }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:560px;margin:0 auto;animation:cardIn .35s ease both">
+        <sc-if value="{{ studyActive }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <button onClick="{{ goHome }}" style="border:none;background:none;font:inherit;font-size:14px;color:rgba(var(--ink-rgb),.55);cursor:pointer;padding:4px 0">✕ ออก</button>
+              <div style="font-size:13px;font-weight:500;color:rgba(var(--ink-rgb),.55)">{{ deckTitle }}</div>
+              <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:rgba(var(--ink-rgb),.55)">{{ deckPos }}</div>
+            </div>
+            <div style="height:6px;border-radius:6px;background:rgba(var(--ink-rgb),.08);overflow:hidden;margin-bottom:22px"><div style="height:100%;width:{{ deckProgress }}%;background:{{ accent }};border-radius:6px;transition:width .3s ease"></div></div>
+
+            <div onClick="{{ flip }}" style="perspective:1800px;cursor:pointer;user-select:none">
+              <div style="position:relative;width:100%;height:420px;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.15,.2,1);transform:{{ cardTransform }}">
+                <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:22px;box-shadow:0 14px 40px rgba(var(--ink-rgb),.07);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px;text-align:center">
+                  <span style="font-size:11px;letter-spacing:1px;font-family:'IBM Plex Mono',monospace;color:rgba(var(--ink-rgb),.4)">{{ card.pos }}</span>
+                  <div style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:46px;margin:16px 0 6px;line-height:1.1;text-wrap:balance">{{ card.en }}</div>
+                  <button onClick="{{ playFront }}" style="margin-top:22px;width:52px;height:52px;border-radius:50%;border:1px solid rgba(var(--ink-rgb),.12);background:var(--soft);cursor:pointer;font-size:20px">🔊</button>
+                  <div style="position:absolute;bottom:20px;font-size:12.5px;color:rgba(var(--ink-rgb),.4)">แตะการ์ดเพื่อดูความหมาย</div>
+                </div>
+                <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg);background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:22px;box-shadow:0 14px 40px rgba(var(--ink-rgb),.07);padding:26px 28px;display:flex;flex-direction:column;overflow:hidden">
+                  <div style="display:flex;align-items:baseline;gap:9px">
+                    <span style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:22px">{{ card.en }}</span>
+                    <span style="font-size:11px;color:rgba(var(--ink-rgb),.42);font-family:'IBM Plex Mono',monospace">{{ card.pos }}</span>
+                    <div style="flex:1"></div>
+                    <button onClick="{{ card.toggleStar }}" style="border:none;background:none;cursor:pointer;font-size:12.5px;font-weight:600;color:oklch(0.62 0.13 75);padding:2px 4px;white-space:nowrap">{{ card.starIcon }}</button>
+                  </div>
+                  <div style="font-size:25px;font-weight:600;color:{{ accent }};margin:6px 0 16px;line-height:1.35;text-wrap:pretty">{{ card.th }}</div>
+                  <div style="border-radius:12px;overflow:hidden;flex:1;min-height:0;position:relative;background:{{ accentSoft }}">
+                    <image-slot id="{{ card.slotId }}" shape="rect" placeholder="แตะ/ลากรูปมาวางเพื่อช่วยจำคำนี้"></image-slot>
+                  </div>
+                  <sc-if value="{{ card.hasExample }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:12px;padding:11px 13px;border-radius:11px;background:var(--soft);border:1px solid rgba(var(--ink-rgb),.06)">
+                      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;line-height:1.45">{{ card.exEn }}</div>
+                      <div style="font-size:12.5px;color:rgba(var(--ink-rgb),.55);margin-top:3px">{{ card.exTh }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:20px">
+              <button onClick="{{ markReview }}" style="flex:1;border:1px solid rgba(var(--ink-rgb),.14);background:var(--surface);font:inherit;font-weight:600;font-size:15px;padding:14px;border-radius:13px;cursor:pointer">↻ ยังไม่แม่น</button>
+              <button onClick="{{ markKnown }}" style="flex:1;border:none;background:{{ okColor }};color:#fff;font:inherit;font-weight:600;font-size:15px;padding:14px;border-radius:13px;cursor:pointer">✓ จำได้</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ studyDone }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:20px;padding:40px 30px;text-align:center;animation:pop .4s ease both">
+            <div style="font-size:44px">🎉</div>
+            <h2 style="margin:12px 0 4px;font-size:24px;font-weight:600">จบเซ็ตแล้ว!</h2>
+            <div style="color:rgba(var(--ink-rgb),.55);font-size:14px;margin-bottom:24px">{{ deckTitle }}</div>
+            <div style="display:flex;justify-content:center;gap:34px;margin-bottom:28px">
+              <div><div style="font-size:30px;font-weight:600;color:{{ okColor }};font-family:'IBM Plex Mono',monospace">{{ doneKnown }}</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.55)">จำได้</div></div>
+              <div><div style="font-size:30px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ doneReview }}</div><div style="font-size:13px;color:rgba(var(--ink-rgb),.55)">ต้องทบทวน</div></div>
+            </div>
+            <div style="display:flex;gap:11px;justify-content:center">
+              <button onClick="{{ restartDeck }}" style="border:1px solid rgba(var(--ink-rgb),.13);background:var(--surface);font:inherit;font-weight:600;font-size:14px;padding:12px 20px;border-radius:11px;cursor:pointer">ทำซ้ำ</button>
+              <button onClick="{{ goHome }}" style="border:none;background:{{ accent }};color:#fff;font:inherit;font-weight:600;font-size:14px;padding:12px 20px;border-radius:11px;cursor:pointer">กลับหน้าแรก</button>
+            </div>
+          </div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <!-- ============ QUIZ ============ -->
+    <sc-if value="{{ isQuiz }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:560px;margin:0 auto;animation:cardIn .35s ease both">
+        <sc-if value="{{ quizActive }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <button onClick="{{ goHome }}" style="border:none;background:none;font:inherit;font-size:14px;color:rgba(var(--ink-rgb),.55);cursor:pointer;padding:4px 0">✕ ออก</button>
+              <div style="font-size:13px;font-weight:500;color:rgba(var(--ink-rgb),.55)">Quiz · {{ quizCat }}</div>
+              <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:rgba(var(--ink-rgb),.55)">{{ quizPos }}</div>
+            </div>
+            <div style="height:6px;border-radius:6px;background:rgba(var(--ink-rgb),.08);overflow:hidden;margin-bottom:26px"><div style="height:100%;width:{{ quizProgress }}%;background:{{ accent }};border-radius:6px;transition:width .3s ease"></div></div>
+            <div style="background:var(--hero);color:#fff;border-radius:18px;padding:34px 26px;text-align:center;margin-bottom:18px">
+              <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;color:rgba(255,255,255,.5)">{{ quizPromptLabel }}</div>
+              <div style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:32px;margin-top:10px;text-wrap:balance">{{ quizPrompt }}</div>
+            </div>
+            <div style="display:grid;gap:11px">
+              <sc-for list="{{ quizOptions }}" as="opt" hint-placeholder-count="4">
+                <button onClick="{{ opt.pick }}" style="text-align:left;border:1.5px solid {{ opt.border }};background:{{ opt.bg }};color:{{ opt.fg }};font:inherit;font-size:16px;font-weight:500;padding:15px 18px;border-radius:13px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s ease">
+                  <span style="width:26px;height:26px;flex:none;border-radius:7px;background:{{ opt.keyBg }};color:{{ opt.keyFg }};display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ opt.key }}</span>
+                  <span style="flex:1">{{ opt.text }}</span>
+                  <span style="font-size:16px">{{ opt.mark }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ quizAnswered }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ quizNext }}" style="width:100%;margin-top:18px;border:none;background:{{ accent }};color:#fff;font:inherit;font-weight:600;font-size:15px;padding:14px;border-radius:13px;cursor:pointer">{{ quizNextLabel }} →</button>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ quizDone }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:20px;padding:40px 30px;text-align:center;animation:pop .4s ease both">
+            <div style="font-size:44px">{{ quizEmoji }}</div>
+            <h2 style="margin:12px 0 4px;font-size:24px;font-weight:600">ผลคะแนน</h2>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:46px;font-weight:600;color:{{ accent }};margin:8px 0">{{ quizScore }}<span style="font-size:24px;color:rgba(var(--ink-rgb),.35)">/{{ quizTotal }}</span></div>
+            <div style="color:rgba(var(--ink-rgb),.55);font-size:14px;margin-bottom:26px">{{ quizVerdict }}</div>
+            <div style="display:flex;gap:11px;justify-content:center">
+              <button onClick="{{ quizRestart }}" style="border:1px solid rgba(var(--ink-rgb),.13);background:var(--surface);font:inherit;font-weight:600;font-size:14px;padding:12px 20px;border-radius:11px;cursor:pointer">เล่นอีกครั้ง</button>
+              <button onClick="{{ goHome }}" style="border:none;background:{{ accent }};color:#fff;font:inherit;font-weight:600;font-size:14px;padding:12px 20px;border-radius:11px;cursor:pointer">กลับหน้าแรก</button>
+            </div>
+          </div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <!-- ============ DICTATION ============ -->
+    <sc-if value="{{ isDict }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:560px;margin:0 auto;animation:cardIn .35s ease both">
+        <sc-if value="{{ dictActive }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <button onClick="{{ goHome }}" style="border:none;background:none;font:inherit;font-size:14px;color:rgba(var(--ink-rgb),.55);cursor:pointer;padding:4px 0">✕ ออก</button>
+              <div style="font-size:13px;font-weight:500;color:rgba(var(--ink-rgb),.55)">{{ dictTitle }}</div>
+              <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:rgba(var(--ink-rgb),.55)">{{ dictPos }}</div>
+            </div>
+            <div style="height:6px;border-radius:6px;background:rgba(var(--ink-rgb),.08);overflow:hidden;margin-bottom:26px"><div style="height:100%;width:{{ dictProgress }}%;background:{{ accent }};border-radius:6px;transition:width .3s ease"></div></div>
+
+            <div style="background:var(--hero);color:#fff;border-radius:18px;padding:38px 26px;text-align:center;margin-bottom:16px">
+              <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;color:rgba(255,255,255,.5)">ฟังเสียงแล้วพิมพ์คำที่ได้ยิน</div>
+              <button onClick="{{ dictPlay }}" style="margin-top:16px;width:74px;height:74px;border-radius:50%;border:none;background:{{ accent }};color:#fff;cursor:pointer;font-size:30px">🔊</button>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.45);margin-top:12px">แตะเพื่อฟังซ้ำ</div>
+            </div>
+
+            <input value="{{ dictInput }}" onInput="{{ dictType }}" onKeyDown="{{ dictOnKey }}" placeholder="พิมพ์คำที่ได้ยิน…" autocomplete="off" autocapitalize="off" spellcheck="false" style="width:100%;border:1.5px solid rgba(var(--ink-rgb),.14);background:var(--surface);border-radius:13px;padding:15px 18px;font-size:20px;font-family:'IBM Plex Sans',sans-serif;text-align:center;outline:none">
+
+            <sc-if value="{{ dictNotChecked }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ dictCheck }}" style="width:100%;margin-top:16px;border:none;background:{{ accent }};color:#fff;font:inherit;font-weight:600;font-size:15px;padding:14px;border-radius:13px;cursor:pointer">ตรวจคำตอบ</button>
+            </sc-if>
+            <sc-if value="{{ dictChecked }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="margin-top:16px;padding:16px 18px;border-radius:13px;background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);text-align:center">
+                  <div style="font-weight:600;font-size:15px;color:{{ dictResultColor }}">{{ dictResultText }}</div>
+                  <div style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:26px;margin-top:6px">{{ dictWord }}</div>
+                  <div style="font-size:14px;color:rgba(var(--ink-rgb),.6);margin-top:2px">{{ dictMeaning }}</div>
+                  <sc-if value="{{ dictHasExample }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(var(--ink-rgb),.07);font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;line-height:1.45;text-align:left">{{ dictExEn }}<div style="font-family:'IBM Plex Sans Thai',sans-serif;font-size:12.5px;color:rgba(var(--ink-rgb),.55);margin-top:3px">{{ dictExTh }}</div></div>
+                  </sc-if>
+                </div>
+                <button onClick="{{ dictNext }}" style="width:100%;margin-top:16px;border:none;background:{{ accent }};color:#fff;font:inherit;font-weight:600;font-size:15px;padding:14px;border-radius:13px;cursor:pointer">{{ dictNextLabel }} →</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dictDone }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:20px;padding:40px 30px;text-align:center;animation:pop .4s ease both">
+            <div style="font-size:44px">{{ dictEmoji }}</div>
+            <h2 style="margin:12px 0 4px;font-size:24px;font-weight:600">ผลการสะกด</h2>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:46px;font-weight:600;color:{{ accent }};margin:8px 0">{{ dictScore }}<span style="font-size:24px;color:rgba(var(--ink-rgb),.35)">/{{ dictTotal }}</span></div>
+            <div style="color:rgba(var(--ink-rgb),.55);font-size:14px;margin-bottom:26px">{{ dictVerdict }}</div>
+            <div style="display:flex;gap:11px;justify-content:center">
+              <button onClick="{{ dictRestart }}" style="border:1px solid rgba(var(--ink-rgb),.13);background:var(--surface);font:inherit;font-weight:600;font-size:14px;padding:12px 20px;border-radius:11px;cursor:pointer">ทำอีกครั้ง</button>
+              <button onClick="{{ goHome }}" style="border:none;background:{{ accent }};color:#fff;font:inherit;font-weight:600;font-size:14px;padding:12px 20px;border-radius:11px;cursor:pointer">กลับหน้าแรก</button>
+            </div>
+          </div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <!-- ============ READING LIST ============ -->
+    <sc-if value="{{ isReading }}" hint-placeholder-val="{{ false }}">
+      <section style="animation:cardIn .3s ease both">
+        <button onClick="{{ goHome }}" style="border:none;background:none;font:inherit;font-size:14px;color:rgba(var(--ink-rgb),.55);cursor:pointer;padding:4px 0;margin-bottom:12px">← หน้าแรก</button>
+        <h1 style="margin:0 0 4px;font-size:24px;font-weight:600">ฝึกอ่านเรื่องสั้น</h1>
+        <p style="margin:0 0 16px;font-size:13.5px;color:rgba(var(--ink-rgb),.55);line-height:1.5;max-width:600px">เรื่องสั้นต้นฉบับระดับเริ่มต้น สถานการณ์แนว TOEIC และใช้จริง — กด 🔊 ฟังทั้งเรื่อง, แตะคำใดก็ได้เพื่อฟังเสียงและดูคำแปล, หรือกดดูคำแปลไทยทีละย่อหน้า</p>
+        <div style="position:relative;margin-bottom:14px">
+          <input value="{{ storyQuery }}" onInput="{{ onStorySearch }}" placeholder="ค้นหาเรื่อง / คำในเรื่อง…" style="width:100%;border:1px solid rgba(var(--ink-rgb),.12);background:var(--surface);color:var(--ink);border-radius:12px;padding:13px 16px 13px 44px;font-size:14px;outline:none">
+          <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.5">🔍</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px">
+          <sc-for list="{{ readingThemes }}" as="t" hint-placeholder-count="12">
+            <button onClick="{{ t.pick }}" style="border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }};font:inherit;font-size:13px;font-weight:500;padding:8px 14px;border-radius:999px;cursor:pointer">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <div style="font-size:12.5px;color:rgba(var(--ink-rgb),.45);font-family:'IBM Plex Mono',monospace;margin-bottom:14px">{{ storyCount }} เรื่อง จากทั้งหมด {{ storyTotal }} เรื่อง</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+          <sc-for list="{{ storyList }}" as="st" hint-placeholder-count="5">
+            <div onClick="{{ st.open }}" style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:15px;padding:22px;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease" style-hover="transform:translateY(-3px);box-shadow:0 10px 26px rgba(var(--ink-rgb),.09)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:32px">{{ st.emoji }}</div>
+                <span style="font-size:11px;font-weight:500;padding:4px 10px;border-radius:999px;background:{{ accentSoft }};color:{{ accent }};font-family:'IBM Plex Sans Thai',sans-serif">{{ st.level }}</span>
+              </div>
+              <div style="font-family:'IBM Plex Sans',sans-serif;font-size:18px;font-weight:600">{{ st.title }}</div>
+              <div style="font-size:13.5px;color:rgba(var(--ink-rgb),.55);margin-top:2px">{{ st.titleTh }}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px">
+                <div style="font-size:12px;color:rgba(var(--ink-rgb),.4);font-family:'IBM Plex Mono',monospace">{{ st.count }} ย่อหน้า · แตะคำได้</div>
+                <button onClick="{{ st.play }}" title="ฟังทั้งเรื่อง" style="border:1px solid rgba(var(--ink-rgb),.12);background:var(--soft);cursor:pointer;width:34px;height:34px;border-radius:9px;font-size:14px">🔊</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <!-- ============ STORY READER ============ -->
+    <sc-if value="{{ isStory }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:680px;margin:0 auto;animation:cardIn .3s ease both">
+        <button onClick="{{ goReading }}" style="border:none;background:none;font:inherit;font-size:14px;color:rgba(var(--ink-rgb),.55);cursor:pointer;padding:4px 0;margin-bottom:14px">← เรื่องทั้งหมด</button>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+          <div style="font-size:40px">{{ storyEmoji }}</div>
+          <div style="flex:1">
+            <h1 style="margin:0;font-family:'IBM Plex Sans',sans-serif;font-size:26px;font-weight:600">{{ storyTitle }}</h1>
+            <div style="font-size:14px;color:rgba(var(--ink-rgb),.5)">{{ storyTitleTh }}</div>
+          </div>
+          <button onClick="{{ playStory }}" title="ฟังทั้งเรื่อง" style="border:none;background:{{ accent }};color:#fff;cursor:pointer;font:inherit;font-weight:600;font-size:14px;padding:10px 16px;border-radius:11px;display:flex;align-items:center;gap:7px">🔊 ฟังทั้งเรื่อง</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;padding-bottom:90px">
+          <sc-for list="{{ paragraphs }}" as="p" hint-placeholder-count="7">
+            <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.07);border-radius:14px;padding:18px 20px">
+              <div style="font-family:'IBM Plex Sans',sans-serif;font-size:18px;line-height:2;color:var(--ink)">
+                <sc-for list="{{ p.tokens }}" as="tk" hint-placeholder-count="0">
+                  <span onClick="{{ tk.click }}" style="cursor:{{ tk.cursor }};text-decoration:{{ tk.deco }};border-radius:4px;padding:0 1px" style-hover="background:{{ accentSoft }}">{{ tk.text }}</span>
+                </sc-for>
+              </div>
+              <button onClick="{{ p.toggleTh }}" style="border:none;background:none;font:inherit;font-size:12.5px;font-weight:500;color:{{ accent }};cursor:pointer;padding:8px 0 0;margin-top:4px">{{ p.thBtn }}</button>
+              <sc-if value="{{ p.showTh }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:14.5px;color:rgba(var(--ink-rgb),.62);line-height:1.6;padding-top:8px;border-top:1px solid rgba(var(--ink-rgb),.07);margin-top:6px">{{ p.thText }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ hasComp }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:16px;padding:22px;margin:-70px 0 20px">
+            <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;color:rgba(var(--ink-rgb),.45);margin-bottom:6px">คำถามท้ายเรื่อง</div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px">คำว่า “<span style="font-family:'IBM Plex Sans',sans-serif">{{ compWord }}</span>” ในเรื่องนี้แปลว่าอะไร?</div>
+            <button onClick="{{ compPlay }}" style="border:1px solid rgba(var(--ink-rgb),.12);background:var(--soft);cursor:pointer;font:inherit;font-size:12.5px;padding:6px 12px;border-radius:9px;margin-bottom:14px">🔊 ฟังคำนี้</button>
+            <div style="display:grid;gap:10px">
+              <sc-for list="{{ compOptions }}" as="o" hint-placeholder-count="4">
+                <button onClick="{{ o.pick }}" style="text-align:left;border:1.5px solid {{ o.bd }};background:{{ o.bg }};color:var(--ink);font:inherit;font-size:15px;padding:13px 16px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:10px">
+                  <span style="flex:1">{{ o.t }}</span>
+                  <span style="font-size:15px">{{ o.mark }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ compAnswered }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:14px;font-size:14px;font-weight:600;color:{{ compResultColor }}">{{ compResult }}</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <button onClick="{{ markStoryRead }}" style="width:100%;margin-bottom:80px;border:1px solid rgba(var(--ink-rgb),.14);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;font-size:15px;padding:14px;border-radius:13px;cursor:pointer">{{ readDoneLabel }}</button>
+
+        <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:20px;width:calc(100% - 44px);max-width:636px;background:var(--hero);color:#fff;border-radius:16px;padding:15px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 14px 40px rgba(0,0,0,.28);z-index:15">
+            <button onClick="{{ selPlay }}" style="width:46px;height:46px;flex:none;border-radius:50%;border:none;background:{{ accent }};color:#fff;cursor:pointer;font-size:18px">🔊</button>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:19px">{{ selWord }} <span style="font-size:11px;color:rgba(255,255,255,.5);font-family:'IBM Plex Mono',monospace">{{ selPos }}</span></div>
+              <div style="font-size:14px;color:rgba(255,255,255,.78)">{{ selMeaning }}</div>
+            </div>
+            <button onClick="{{ selStar }}" style="border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font:inherit;font-weight:600;font-size:13px;padding:9px 13px;border-radius:10px;cursor:pointer;white-space:nowrap">{{ selStarIcon }}</button>
+          </div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <!-- ============ STATS ============ -->
+    <sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
+      <section style="max-width:760px;margin:0 auto;animation:cardIn .3s ease both">
+        <button onClick="{{ goHome }}" style="border:none;background:none;font:inherit;font-size:14px;color:rgba(var(--ink-rgb),.55);cursor:pointer;padding:4px 0;margin-bottom:12px">← หน้าแรก</button>
+        <h1 style="margin:0 0 20px;font-size:24px;font-weight:600">สถิติการเรียน</h1>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+          <div style="background:var(--hero);color:#fff;border-radius:16px;padding:22px 24px">
+            <div style="font-size:13px;color:rgba(255,255,255,.6)">เป้าหมายวันนี้</div>
+            <div style="font-size:30px;font-weight:600;font-family:'IBM Plex Mono',monospace;margin-top:4px">{{ stGoalToday }}<span style="font-size:18px;color:rgba(255,255,255,.4)">/{{ stGoal }}</span></div>
+            <div style="height:7px;border-radius:6px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:12px"><div style="height:100%;width:{{ stGoalPct }}%;background:{{ accent }};border-radius:6px"></div></div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <sc-for list="{{ goalOpts }}" as="g" hint-placeholder-count="4">
+                <button onClick="{{ g.pick }}" style="flex:1;border:1px solid {{ g.border }};background:{{ g.bg }};color:{{ g.fg }};font:inherit;font-size:13px;font-weight:600;padding:7px 0;border-radius:9px;cursor:pointer">{{ g.n }}</button>
+              </sc-for>
+            </div>
+            <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:8px">ตั้งเป้าจำนวนคำต่อวัน</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:16px;padding:22px 24px;display:flex;flex-direction:column;justify-content:center">
+            <div style="font-size:13px;color:rgba(var(--ink-rgb),.55)">กิจกรรม 7 วันล่าสุด</div>
+            <div style="display:flex;align-items:flex-end;gap:8px;height:100px;margin-top:12px">
+              <sc-for list="{{ stDays }}" as="d" hint-placeholder-count="7">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;justify-content:flex-end;height:100%">
+                  <div style="width:100%;height:{{ d.h }}px;background:{{ d.bg }};border-radius:5px"></div>
+                  <div style="font-size:10px;color:rgba(var(--ink-rgb),.45)">{{ d.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:14px;padding:18px 20px">
+            <div style="font-size:28px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:{{ accent }}">{{ stStreak }}</div>
+            <div style="font-size:13px;color:rgba(var(--ink-rgb),.55);margin-top:2px">วันต่อเนื่อง 🔥</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:14px;padding:18px 20px">
+            <div style="font-size:28px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ stLearned }}<span style="font-size:15px;color:rgba(var(--ink-rgb),.4)">/{{ stTotal }}</span></div>
+            <div style="font-size:13px;color:rgba(var(--ink-rgb),.55);margin-top:2px">คำที่จำได้แล้ว</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:14px;padding:18px 20px">
+            <div style="font-size:28px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ stSeen }}</div>
+            <div style="font-size:13px;color:rgba(var(--ink-rgb),.55);margin-top:2px">คำที่เริ่มเรียน</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:14px;padding:18px 20px">
+            <div style="font-size:28px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:oklch(0.68 0.15 75)">{{ stStars }}</div>
+            <div style="font-size:13px;color:rgba(var(--ink-rgb),.55);margin-top:2px">คำติดดาว ★</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:14px;padding:18px 20px">
+            <div style="font-size:28px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ stQuizAvg }}%</div>
+            <div style="font-size:13px;color:rgba(var(--ink-rgb),.55);margin-top:2px">Quiz เฉลี่ย ({{ stQuizN }} ครั้ง)</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:14px;padding:18px 20px">
+            <div style="font-size:28px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ stDictAvg }}%</div>
+            <div style="font-size:13px;color:rgba(var(--ink-rgb),.55);margin-top:2px">Dictation เฉลี่ย ({{ stDictN }} ครั้ง)</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(var(--ink-rgb),.08);border-radius:14px;padding:18px 20px">
+            <div style="font-size:28px;font-weight:600;font-family:'IBM Plex Mono',monospace">{{ stRead }}<span style="font-size:15px;color:rgba(var(--ink-rgb),.4)">/{{ stStoriesTotal }}</span></div>
+            <div style="font-size:13px;color:rgba(var(--ink-rgb),.55);margin-top:2px">เรื่องที่อ่านจบ 📖</div>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+  </main>
+
+  <footer style="border-top:1px solid rgba(var(--ink-rgb),.08);padding:18px 22px;text-align:center;font-size:12px;color:rgba(var(--ink-rgb),.4);font-family:'IBM Plex Mono',monospace">
+    {{ totalWords }} คำ · เรียง A–Z · ความคืบหน้าถูกบันทึกในเครื่องอัตโนมัติ
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:760},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#e2664e&quot;,&quot;options&quot;:[&quot;#e2664e&quot;,&quot;#4f46e5&quot;,&quot;#0d9488&quot;,&quot;#7c3aed&quot;,&quot;#2563eb&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ธีม&quot;},&quot;quizPrompt&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;อังกฤษ→ไทย&quot;,&quot;ไทย→อังกฤษ&quot;],&quot;default&quot;:&quot;อังกฤษ→ไทย&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;โหมด Quiz&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.POS = {n:'n. คำนาม', v:'v. คำกริยา', adj:'adj. คำคุณศัพท์', adv:'adv. คำวิเศษณ์', prep:'prep. คำบุพบท', conj:'conj. คำสันธาน', pron:'pron. คำสรรพนาม', aux:'aux. กริยาช่วย', det:'det. คำนำหน้านาม', phr:'phr. วลี'};
+    this.words = [];
+    this.examples = {};
+    this.srs = this._loadSrs();
+    this.stars = this._loadStars();
+    this.streak = this._loadStreak();
+    this.activity = this._loadJSON('toeic_activity_v1', {});
+    this.history = this._loadJSON('toeic_history_v1', {quiz:[], dict:[]});
+    this.readSet = new Set(this._loadJSON('toeic_read_v1', []));
+    this.goal = (()=>{ const g=parseInt(localStorage.getItem('toeic_goal_v1'),10); return (g&&g>0)?g:20; })();
+    const dflt = {
+      loaded:false, screen:'home', query:'', letter:'A',
+      deck:[], idx:0, flipped:false, done:false, sk:0, sr:0, deckTitle:'',
+      quiz:null, dict:null,
+      dark: (()=>{try{return localStorage.getItem('toeic_dark')==='1';}catch(e){return false;}})(),
+      reading:{storyId:null, showTh:{}, sel:null, theme:'all', q:''},
+    };
+    // restore the screen/position the user left off at
+    let sess=null;
+    try{ sess=JSON.parse(localStorage.getItem('toeic_session_v1')); }catch(e){}
+    if(sess){
+      if((sess.screen==='study'&&(!sess.deck||!sess.deck.length)) || (sess.screen==='quiz'&&!sess.quiz) || (sess.screen==='dict'&&!sess.dict)) sess.screen='home';
+    }
+    this.state = Object.assign(dflt, sess||{}, {loaded:false, dark:dflt.dark});
+    this.stories = [];
+    this.THEMES = [
+      {id:'all', label:'ทั้งหมด', emoji:'📚'},
+      {id:'office', label:'ออฟฟิศ', emoji:'🏢'},
+      {id:'travel', label:'เดินทาง', emoji:'✈️'},
+      {id:'food', label:'อาหาร', emoji:'🍽️'},
+      {id:'shop', label:'ช้อปปิ้ง', emoji:'🛍️'},
+      {id:'meeting', label:'ประชุม', emoji:'📊'},
+      {id:'bank', label:'การเงิน', emoji:'🏦'},
+      {id:'phone', label:'โทร/อีเมล', emoji:'📞'},
+      {id:'tech', label:'เทคโนโลยี', emoji:'💻'},
+      {id:'service', label:'บริการลูกค้า', emoji:'🎧'},
+      {id:'health', label:'สุขภาพ', emoji:'🏥'},
+      {id:'daily', label:'ชีวิตประจำวัน', emoji:'🚌'},
+    ];
+  }
+  componentDidMount(){
+    this._applyDark(this.state.dark);
+    fetch('data/vocab.json').then(r=>r.json()).then(data=>{
+      this.words = data;
+      this.setState({loaded:true});
+    }).catch(()=>this.setState({loaded:true}));
+    fetch('data/examples.json').then(r=>r.json()).then(ex=>{ this.examples=ex; this.forceUpdate(); }).catch(()=>{});
+    fetch('data/stories.json').then(r=>r.json()).then(st=>{ this.stories=st; this.forceUpdate(); }).catch(()=>{});
+  }
+
+  _loadSrs(){ try{ return JSON.parse(localStorage.getItem('toeic_srs_v2'))||{}; }catch(e){ return {}; } }
+  _saveSrs(){ try{ localStorage.setItem('toeic_srs_v2', JSON.stringify(this.srs)); }catch(e){} }
+  _loadJSON(k, dflt){ try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?dflt:v; }catch(e){ return dflt; } }
+  _saveJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  componentDidUpdate(){ this._saveSession(); }
+  _saveSession(){ const s=this.state; this._saveJSON('toeic_session_v1', {screen:s.screen, query:s.query, letter:s.letter, deck:s.deck, idx:s.idx, flipped:s.flipped, done:s.done, sk:s.sk, sr:s.sr, deckTitle:s.deckTitle, quiz:s.quiz, dict:s.dict, reading:s.reading}); }
+  _todayKey(){ return new Date().toISOString().slice(0,10); }
+  _bumpActivity(n){ const k=this._todayKey(); this.activity[k]=(this.activity[k]||0)+n; this._saveJSON('toeic_activity_v1', this.activity); }
+  _todayCount(){ return this.activity[this._todayKey()]||0; }
+  recordQuiz=(pct)=>{ this.history.quiz.push({p:pct, d:Date.now()}); if(this.history.quiz.length>50)this.history.quiz.shift(); this._saveJSON('toeic_history_v1', this.history); };
+  recordDict=(pct)=>{ this.history.dict.push({p:pct, d:Date.now()}); if(this.history.dict.length>50)this.history.dict.shift(); this._saveJSON('toeic_history_v1', this.history); };
+  markStoryRead=(id)=>{ this.readSet.add(id); this._saveJSON('toeic_read_v1', [...this.readSet]); this.forceUpdate(); };
+  setGoal=(g)=>{ this.goal=g; try{localStorage.setItem('toeic_goal_v1', String(g));}catch(e){} this.forceUpdate(); };
+  goStats=()=>this.setState({screen:'stats'});
+  _loadStars(){ try{ return new Set(JSON.parse(localStorage.getItem('toeic_star_v1'))||[]); }catch(e){ return new Set(); } }
+  _saveStars(){ try{ localStorage.setItem('toeic_star_v1', JSON.stringify([...this.stars])); }catch(e){} }
+  toggleStar=(w,e)=>{ e&&e.stopPropagation(); if(this.stars.has(w))this.stars.delete(w); else this.stars.add(w); this._saveStars(); this.forceUpdate(); };
+  startStarred=()=>{ const l=this.words.filter(w=>this.stars.has(w.w)); if(l.length) this.startDeck(l.slice().sort(()=>Math.random()-.5),'★ คำติดดาว'); };
+  _applyDark=(on)=>{ try{ document.body.classList.toggle('dark', !!on); }catch(e){} };
+  toggleDark=()=>{ this.setState(s=>{ const d=!s.dark; this._applyDark(d); try{localStorage.setItem('toeic_dark', d?'1':'0');}catch(e){} return {dark:d}; }); };
+  goReading=()=>this.setState({screen:'reading', reading:{storyId:null, showTh:{}, sel:null, theme:'all', q:''}});
+  setReadingTheme=(t)=>this.setState(s=>({reading:{...s.reading, theme:t}}));
+  onStorySearch=(e)=>{ const v=e.target.value; this.setState(s=>({reading:{...s.reading, q:v}})); };
+  openStory=(id)=>this.setState(s=>({screen:'story', reading:{...s.reading, storyId:id, showTh:{}, sel:null, compSel:null}}));
+  compPick=(rid,idx,ok)=>{ if(this.state.reading.compSel!=null)return; this.setState(s=>({reading:{...s.reading, compSel:{idx, ok}}})); if(ok)this.markStoryRead(rid); };
+  playStory=(id,e)=>{ e&&e.stopPropagation(); const st=this.stories.find(x=>x.id===id); if(st) this.say(st.paras.map(p=>p[0]).join(' ')); };
+  stopSpeak=()=>{ try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){} };
+  toggleParaTh=(i)=>this.setState(s=>{ const sh={...s.reading.showTh}; sh[i]=!sh[i]; return {reading:{...s.reading, showTh:sh}}; });
+  pickWord=(word)=>{ const clean=(word||'').toLowerCase().replace(/[^a-z]/g,''); if(!clean)return; this.say(clean); const hit=this.words.find(x=>x.w===clean); this.setState(s=>({reading:{...s.reading, sel:{w:clean, found:!!hit, t:hit?hit.t:'', p:hit?hit.p:''}}})); };
+  _loadStreak(){
+    try{
+      const s = JSON.parse(localStorage.getItem('toeic_streak_v1'))||{n:0,last:null};
+      const today = new Date().toDateString();
+      if(s.last===today) return s.n||1;
+      const yest = new Date(Date.now()-864e5).toDateString();
+      s.n = (s.last===yest ? (s.n||0)+1 : 1);
+      s.last = today;
+      localStorage.setItem('toeic_streak_v1', JSON.stringify(s));
+      return s.n;
+    }catch(e){ return 1; }
+  }
+  _INT(){ return [0,1,2,4,8,16]; }
+  _isDue(id){ const r=this.srs[id]; return !r || (r.due||0)<=Date.now(); }
+  _isLearned(id){ const r=this.srs[id]; return r && r.box>=3; }
+  mark(id, known){
+    const r=this.srs[id]||{box:0}; const box=known?Math.min(r.box+1,5):1;
+    this.srs[id]={box, due:Date.now()+this._INT()[box]*864e5}; this._saveSrs();
+    this._bumpActivity(1);
+  }
+  say(text){ try{ if(!window.speechSynthesis) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='en-US'; u.rate=0.92; speechSynthesis.speak(u);}catch(e){} }
+
+  // filtered list based on current query/letter
+  _list(){
+    const q=this.state.query.trim().toLowerCase();
+    if(q) return this.words.filter(w=>w.w.includes(q)||w.t.toLowerCase().includes(q));
+    return this.words.filter(w=>w.w[0].toUpperCase()===this.state.letter);
+  }
+
+  goHome=()=>this.setState({screen:'home', quiz:null});
+  onSearch=(e)=>{ const v=e.target.value; this.setState({query:v, screen:'browse'}); };
+  openLetter=(L)=>this.setState({screen:'browse', letter:L, query:''});
+
+  startDeck(list, title){
+    const ids=list.map(w=>w.w);
+    this.setState({screen:'study', deck:ids, idx:0, flipped:false, done:false, sk:0, sr:0, deckTitle:title});
+  }
+  startFlash=()=>{ const l=this._list(); if(l.length) this.startDeck(l, this.state.query.trim()?('ค้นหา “'+this.state.query.trim()+'”'):('หมวด '+this.state.letter)); };
+  startAllShuffled=()=>{ const l=this.words.slice().sort(()=>Math.random()-.5).slice(0,25); this.startDeck(l,'สุ่มทั้งคลัง'); };
+  startReviewAll=()=>{
+    let l=this.words.filter(w=>this._isDue(w.w));
+    if(!l.length) l=this.words.slice();
+    l=l.sort(()=>Math.random()-.5).slice(0,20);
+    this.startDeck(l,'ทบทวนวันนี้');
+  };
+  restartDeck=()=>this.setState({idx:0, flipped:false, done:false, sk:0, sr:0});
+  flip=()=>this.setState(s=>({flipped:!s.flipped}));
+  _cur(){ return this.words.find(w=>w.w===this.state.deck[this.state.idx]); }
+  advance(known){
+    this.mark(this.state.deck[this.state.idx], known);
+    this.setState(s=>{
+      const nk=s.sk+(known?1:0), nr=s.sr+(known?0:1);
+      if(s.idx+1>=s.deck.length) return {done:true, sk:nk, sr:nr};
+      return {idx:s.idx+1, flipped:false, sk:nk, sr:nr};
+    });
+  }
+  markKnown=(e)=>{e&&e.stopPropagation();this.advance(true);};
+  markReview=(e)=>{e&&e.stopPropagation();this.advance(false);};
+  playFront=(e)=>{e&&e.stopPropagation();const w=this._cur();if(w)this.say(w.w);};
+
+  startQuiz=()=>{
+    const pool=this._list(); if(!pool.length) return;
+    const all=this.words;
+    const qs=pool.slice().sort(()=>Math.random()-.5).slice(0,10).map(w=>{
+      const distract=all.filter(x=>x.w!==w.w).sort(()=>Math.random()-.5).slice(0,3);
+      const opts=[w,...distract].sort(()=>Math.random()-.5);
+      return {word:w.w, opts:opts.map(o=>o.w)};
+    });
+    this.setState({screen:'quiz', quiz:{title:this.state.query.trim()?('ค้นหา'):('หมวด '+this.state.letter), list:qs, idx:0, sel:null, score:0, done:false}});
+  };
+  quizPick=(id)=>this.setState(s=>{const q=s.quiz;if(q.sel!==null)return{};const cur=q.list[q.idx];return{quiz:{...q,sel:id,score:q.score+(id===cur.word?1:0)}};});
+  quizNext=()=>this.setState(s=>{const q=s.quiz;if(q.idx+1>=q.list.length){this.recordQuiz(Math.round(q.score/q.list.length*100));return{quiz:{...q,done:true}};}return{quiz:{...q,idx:q.idx+1,sel:null}};});
+  quizRestart=()=>this.startQuiz();
+
+  startDict=(list,title)=>{ const ids=list.map(w=>w.w); this.setState({screen:'dict', dict:{deck:ids, idx:0, input:'', checked:false, correct:false, score:0, done:false, title}}); setTimeout(()=>this.dictPlay(),400); };
+  startDictFilter=()=>{ const l=this._list(); if(l.length) this.startDict(l.slice().sort(()=>Math.random()-.5), this.state.query.trim()?'Dictation · ค้นหา':('Dictation · หมวด '+this.state.letter)); };
+  startDictAll=()=>{ const l=this.words.slice().sort(()=>Math.random()-.5).slice(0,20); this.startDict(l,'Dictation · สุ่ม'); };
+  dictType=(e)=>{ const v=e.target.value; this.setState(s=>({dict:{...s.dict,input:v}})); };
+  dictPlay=()=>{ const d=this.state.dict; if(!d)return; const w=this.words.find(x=>x.w===d.deck[d.idx]); if(w)this.say(w.w); };
+  dictCheck=()=>{ this.setState(s=>{ const d=s.dict; if(d.checked) return {}; const w=this.words.find(x=>x.w===d.deck[d.idx]); const ok=w&&d.input.trim().toLowerCase()===w.w.toLowerCase(); if(w)this.mark(w.w, ok); return {dict:{...d, checked:true, correct:ok, score:d.score+(ok?1:0)}}; }); };
+  dictNext=()=>{ this.setState(s=>{ const d=s.dict; if(d.idx+1>=d.deck.length){this.recordDict(Math.round(d.score/d.deck.length*100));return {dict:{...d,done:true}};} return {dict:{...d, idx:d.idx+1, input:'', checked:false, correct:false}}; }); setTimeout(()=>{ const d=this.state.dict; if(d&&!d.done)this.dictPlay(); },250); };
+  dictRestart=()=>{ this.setState(s=>({dict:{...s.dict, idx:0, input:'', checked:false, correct:false, score:0, done:false}})); setTimeout(()=>this.dictPlay(),300); };
+
+  _accent(){ return this.props.accentColor || '#e2664e'; }
+  accentOr(){ return this._accent(); }
+
+  renderVals(){
+    const A=this._accent();
+    const accentSoft=`color-mix(in srgb, ${A} 9%, white)`;
+    const accentLight=`color-mix(in srgb, ${A} 45%, white)`;
+    const enToTh=(this.props.quizPrompt||'อังกฤษ→ไทย')!=='ไทย→อังกฤษ';
+    const s=this.state;
+    const total=this.words.length;
+    const learnedCount=this.words.filter(w=>this._isLearned(w.w)).length;
+    const dueCount=this.words.filter(w=>this._isDue(w.w)).length;
+    const posLabel=(p)=>this.POS[p]||p;
+
+    const base={
+      accent:A, accentSoft, accentLight, okColor:'oklch(0.6 0.14 155)',
+      goHome:this.goHome, startReviewAll:this.startReviewAll, startAllShuffled:this.startAllShuffled,
+      onSearch:this.onSearch, query:s.query,
+      totalWords:total, learnedCount, dueCount,
+      learnedPct: total?Math.round(learnedCount/total*100):0, streak:this.streak,
+      starredCount:this.stars.size, startStarred:this.startStarred, startDictAll:this.startDictAll,
+      dark:s.dark, toggleDark:this.toggleDark, darkIcon:s.dark?'☀':'🌙', goReading:this.goReading, goStats:this.goStats,
+      isHome:s.screen==='home', isBrowse:s.screen==='browse', isStudy:s.screen==='study', isQuiz:s.screen==='quiz', isDict:s.screen==='dict', isReading:s.screen==='reading', isStory:s.screen==='story', isStats:s.screen==='stats',
+    };
+    // daily goal
+    const todayC=this._todayCount();
+    base.goalTarget=this.goal; base.goalToday=todayC;
+    base.goalPct=Math.min(100, Math.round(todayC/this.goal*100));
+    base.goalDone=todayC>=this.goal;
+    base.goalRemain=Math.max(0, this.goal-todayC);
+
+    // alphabet meta
+    const A_CODE=65;
+    const letters=[];
+    for(let i=0;i<26;i++){
+      const L=String.fromCharCode(A_CODE+i);
+      const list=this.words.filter(w=>w.w[0].toUpperCase()===L);
+      const learned=list.filter(w=>this._isLearned(w.w)).length;
+      const hue=Math.round(i/26*340+10);
+      letters.push({letter:L, count:list.length, learned,
+        pct: list.length?Math.round(learned/list.length*100):0,
+        dot:`oklch(0.6 0.14 ${hue})`, op: list.length?1:0.4,
+        open:()=>this.openLetter(L)});
+    }
+    base.letters=letters;
+
+    if(s.screen==='browse'){
+      const q=s.query.trim();
+      const full=this._list();
+      base.browseTitle = q ? ('ผลการค้นหา') : ('หมวด '+s.letter);
+      base.browseCount = full.length;
+      base.showAlpha = !q;
+      base.alphaChips = letters.map(L=>({letter:L.letter, open:L.open,
+        border: L.letter===s.letter?A:'rgba(var(--ink-rgb),.12)',
+        bg: L.letter===s.letter?A:'#fff',
+        fg: L.letter===s.letter?'#fff':(L.count?'#17161a':'rgba(var(--ink-rgb),.3)')}));
+      const shown=full.slice(0,300);
+      base.browseShown=shown.length; base.capped=full.length>shown.length;
+      const hueOf=(w)=>Math.round((w.w.charCodeAt(0)-65)/26*340+10);
+      base.words=shown.map(w=>{
+        const learned=this._isLearned(w.w), seen=!!this.srs[w.w];
+        return {en:w.w, pos:posLabel(w.p), th:w.t, play:()=>this.say(w.w), dot:`oklch(0.6 0.14 ${hueOf(w)})`,
+          star:(e)=>this.toggleStar(w.w,e), starIcon:this.stars.has(w.w)?'★':'☆', starColor:this.stars.has(w.w)?'oklch(0.72 0.15 75)':'rgba(var(--ink-rgb),.25)',
+          markKnown:()=>{ const was=this._isLearned(w.w); this.srs[w.w]={box:4, due:Date.now()+this._INT()[4]*864e5}; this._saveSrs(); if(!was)this._bumpActivity(1); this.forceUpdate(); },
+          markReview:()=>{ this.srs[w.w]={box:1, due:Date.now()+this._INT()[1]*864e5}; this._saveSrs(); this.forceUpdate(); },
+          knownBg: learned?'oklch(0.6 0.14 155)':'var(--soft)',
+          knownFg: learned?'#fff':'rgba(var(--ink-rgb),.55)',
+          knownBorder: learned?'oklch(0.6 0.14 155)':'rgba(var(--ink-rgb),.12)',
+          reviewBg: (seen&&!learned)?'color-mix(in srgb, '+A+' 12%, transparent)':'var(--soft)',
+          reviewFg: (seen&&!learned)?A:'rgba(var(--ink-rgb),.55)',
+          reviewBorder: (seen&&!learned)?A:'rgba(var(--ink-rgb),.12)'};
+      });
+      base.startFlash=this.startFlash; base.startQuiz=this.startQuiz; base.startDict=this.startDictFilter;
+    }
+
+    if(s.screen==='study'){
+      base.studyActive=!s.done; base.studyDone=s.done;
+      base.deckTitle=s.deckTitle; base.deckPos=(s.idx+1)+' / '+s.deck.length;
+      base.deckProgress= s.deck.length? Math.round((s.done?s.deck.length:s.idx)/s.deck.length*100):0;
+      base.cardTransform= s.flipped?'rotateY(180deg)':'rotateY(0deg)';
+      base.flip=this.flip; base.markKnown=this.markKnown; base.markReview=this.markReview; base.playFront=this.playFront; base.restartDeck=this.restartDeck;
+      base.doneKnown=s.sk; base.doneReview=s.sr;
+      const w=this._cur();
+      if(w){ const ex=this.examples[w.w]; base.card={slotId:'toeic-img-'+w.w.replace(/[^a-z0-9]/g,'_'), en:w.w, pos:posLabel(w.p), th:w.t, hasExample:!!ex, exEn:ex?ex[0]:'', exTh:ex?ex[1]:'', starIcon:this.stars.has(w.w)?'★ ติดดาวแล้ว':'☆ ติดดาว', toggleStar:(e)=>this.toggleStar(w.w,e)}; }
+    }
+
+    if(s.screen==='quiz' && s.quiz){
+      const q=s.quiz;
+      base.quizActive=!q.done; base.quizDone=q.done;
+      base.quizCat=q.title; base.quizPos=(q.idx+1)+' / '+q.list.length;
+      base.quizProgress=Math.round((q.done?q.list.length:q.idx)/q.list.length*100);
+      base.quizNext=this.quizNext; base.quizRestart=this.quizRestart;
+      base.quizAnswered=q.sel!==null;
+      base.quizNextLabel=q.idx+1>=q.list.length?'ดูผลคะแนน':'ข้อถัดไป';
+      base.quizScore=q.score; base.quizTotal=q.list.length;
+      const pct=Math.round(q.score/q.list.length*100);
+      base.quizEmoji=pct>=80?'🏆':(pct>=50?'👍':'💪');
+      base.quizVerdict=pct>=80?'เยี่ยมมาก! คุณแม่นคำศัพท์ชุดนี้':(pct>=50?'ดีแล้ว ทบทวนอีกนิดจะเป๊ะ':'ลองทบทวน Flashcard แล้วเล่นใหม่นะ');
+      if(!q.done){
+        const cur=q.list[q.idx];
+        const cw=this.words.find(x=>x.w===cur.word);
+        base.quizPromptLabel=enToTh?'ความหมายของคำนี้คือ?':'คำนี้ภาษาอังกฤษคือ?';
+        base.quizPrompt=enToTh?cw.w:cw.t;
+        const keys=['A','B','C','D'];
+        base.quizOptions=cur.opts.map((oid,i)=>{
+          const ow=this.words.find(x=>x.w===oid);
+          const text=enToTh?ow.t:ow.w;
+          const isCorrect=oid===cur.word, isSel=oid===q.sel;
+          let border='rgba(var(--ink-rgb),.12)',bg='var(--surface)',fg='var(--ink)',keyBg='rgba(var(--ink-rgb),.06)',keyFg='rgba(var(--ink-rgb),.55)',mark='';
+          if(q.sel!==null){
+            if(isCorrect){border='oklch(0.6 0.14 155)';bg='oklch(0.96 0.05 155)';keyBg='oklch(0.6 0.14 155)';keyFg='#fff';mark='✓';}
+            else if(isSel){border='oklch(0.58 0.16 25)';bg='oklch(0.96 0.05 25)';keyBg='oklch(0.58 0.16 25)';keyFg='#fff';mark='✕';}
+            else {fg='rgba(var(--ink-rgb),.4)';}
+          }
+          return {key:keys[i], text, mark, border, bg, fg, keyBg, keyFg, pick:()=>this.quizPick(oid)};
+        });
+      }
+    }
+
+    if(s.screen==='dict' && s.dict){
+      const d=s.dict;
+      base.dictActive=!d.done; base.dictDone=d.done;
+      base.dictTitle=d.title; base.dictPos=(d.idx+1)+' / '+d.deck.length;
+      base.dictProgress=Math.round((d.done?d.deck.length:d.idx)/d.deck.length*100);
+      base.dictInput=d.input; base.dictType=this.dictType; base.dictPlay=this.dictPlay;
+      base.dictChecked=d.checked; base.dictNotChecked=!d.checked;
+      base.dictCheck=this.dictCheck; base.dictNext=this.dictNext; base.dictRestart=this.dictRestart;
+      base.dictOnKey=(e)=>{ if(e.key==='Enter'){ if(this.state.dict.checked) this.dictNext(); else this.dictCheck(); } };
+      base.dictNextLabel=d.idx+1>=d.deck.length?'ดูผลคะแนน':'คำถัดไป';
+      base.dictScore=d.score; base.dictTotal=d.deck.length;
+      const w=this.words.find(x=>x.w===d.deck[d.idx]);
+      if(w){ const ex=this.examples[w.w];
+        base.dictWord=w.w; base.dictMeaning=w.t;
+        base.dictHasExample=d.checked&&!!ex; base.dictExEn=ex?ex[0]:''; base.dictExTh=ex?ex[1]:'';
+        base.dictResultColor=d.correct?'oklch(0.6 0.14 155)':'oklch(0.58 0.16 25)';
+        base.dictResultText=d.correct?'✓ ถูกต้อง!':'✕ คำที่ถูกคือ';
+      }
+      const pct=Math.round(d.score/d.deck.length*100);
+      base.dictEmoji=pct>=80?'🏆':(pct>=50?'👍':'💪');
+      base.dictVerdict=pct>=80?'สุดยอด! หูฟังของคุณแม่นมาก':(pct>=50?'ดีขึ้นเรื่อย ๆ ฝึกต่อไป':'ลองฟังช้า ๆ แล้วสะกดใหม่นะ');
+    }
+
+    const posLbl=(p)=>this.POS[p]||p;
+
+    if(s.screen==='reading'){
+      const th=s.reading.theme||'all';
+      const q=(s.reading.q||'').trim().toLowerCase();
+      base.readingThemes=this.THEMES.map(t=>({label:t.emoji+' '+t.label, pick:()=>this.setReadingTheme(t.id),
+        bg: t.id===th?this.accentOr():'var(--surface)', fg: t.id===th?'#fff':'var(--ink)',
+        border: t.id===th?this.accentOr():'rgba(var(--ink-rgb),.12)'}));
+      base.storyQuery=s.reading.q; base.onStorySearch=this.onStorySearch;
+      let list=this.stories.filter(st=> th==='all'||st.theme===th);
+      if(q) list=list.filter(st=> st.title.toLowerCase().includes(q)||st.titleTh.includes(q)||st.paras.some(p=>p[0].toLowerCase().includes(q)));
+      base.storyTotal=this.stories.length; base.storyCount=list.length;
+      base.storyList=list.map(st=>({open:()=>this.openStory(st.id), play:(e)=>this.playStory(st.id,e), emoji:st.emoji, title:st.title, titleTh:st.titleTh, level:st.level, count:st.paras.length}));
+    }
+
+    if(s.screen==='story'){
+      const st=this.stories.find(x=>x.id===s.reading.storyId);
+      if(st){
+        base.storyTitle=st.title; base.storyTitleTh=st.titleTh; base.storyEmoji=st.emoji;
+        base.playStory=(e)=>this.playStory(st.id,e); base.stopSpeak=this.stopSpeak;
+        base.paragraphs=st.paras.map((p,pi)=>{
+          const tokens=p[0].split(/(\s+)/).map((t,i)=>{
+            const isW=/[a-zA-Z]/.test(t);
+            return {key:pi+'-'+i, text:t, cursor:isW?'pointer':'default', deco:isW?'underline dotted rgba(var(--ink-rgb),.28)':'none', click:isW?(()=>this.pickWord(t)):(()=>{})};
+          });
+          const shown=!!s.reading.showTh[pi];
+          return {idx:pi, tokens, thText:p[1], showTh:shown, thBtn:shown?'ซ่อนคำแปล':'ดูคำแปลไทย', toggleTh:()=>this.toggleParaTh(pi)};
+        });
+      }
+      base.hasSel=!!s.reading.sel;
+      const sel=s.reading.sel;
+      if(sel){ base.selWord=sel.w; base.selMeaning=sel.found?sel.t:'(ไม่พบในคลังคำศัพท์)'; base.selPos=sel.found?posLbl(sel.p):''; base.selPlay=()=>this.say(sel.w); base.selStar=(e)=>this.toggleStar(sel.w,e); base.selStarIcon=this.stars.has(sel.w)?'★ ติดดาวแล้ว':'☆ ติดดาวคำนี้'; }
+      // read status
+      const rid=s.reading.storyId;
+      base.storyRead=this.readSet.has(rid);
+      base.markStoryRead=()=>this.markStoryRead(rid);
+      base.readDoneLabel=this.readSet.has(rid)?'✓ อ่านจบแล้ว':'ทำเครื่องหมายว่าอ่านจบ';
+      // comprehension: pick a key content word from the story that is in the vocab
+      const st2=this.stories.find(x=>x.id===rid);
+      if(st2 && this.words.length){
+        const hit=[];
+        st2.paras.forEach(p=>p[0].split(/\s+/).forEach(t=>{ const c=t.toLowerCase().replace(/[^a-z]/g,''); if(c.length>=5){ const w=this.words.find(x=>x.w===c); if(w && !hit.find(h=>h.w===c)) hit.push(w); } }));
+        if(hit.length){
+          const hash=[...rid].reduce((a,c)=>a+c.charCodeAt(0),0);
+          const key=hit[hash%hit.length];
+          const others=this.words.filter(w=>w.w!==key.w && w.t!==key.t);
+          const d=[others[hash%others.length], others[(hash*7+3)%others.length], others[(hash*13+5)%others.length]];
+          let opts=[{t:key.t, ok:true}, {t:d[0].t, ok:false}, {t:d[1].t, ok:false}, {t:d[2].t, ok:false}];
+          const rot=hash%4; opts=opts.slice(rot).concat(opts.slice(0,rot));
+          const csel=s.reading.compSel;
+          base.hasComp=true; base.compWord=key.w; base.compPlay=()=>this.say(key.w);
+          base.compAnswered=csel!=null;
+          base.compResult = csel!=null ? (csel.ok?'✓ ถูกต้อง! บันทึกว่าอ่านจบแล้ว':'ยังไม่ถูก ลองทบทวนอีกครั้ง') : '';
+          base.compResultColor = csel!=null ? (csel.ok?'oklch(0.55 0.14 155)':'oklch(0.58 0.16 25)') : 'transparent';
+          base.compOptions=opts.map((o,i)=>{ let bg='var(--surface)',bd='rgba(var(--ink-rgb),.14)',mark='';
+            if(csel!=null){ if(o.ok){bg='oklch(0.96 0.05 155)';bd='oklch(0.6 0.14 155)';mark='✓';} else if(csel.idx===i){bd='oklch(0.58 0.16 25)';mark='✕';} }
+            return {t:o.t, bg, bd, mark, pick:()=>this.compPick(rid,i,o.ok)};
+          });
+        }
+      }
+    }
+
+    if(s.screen==='stats'){
+      const learned=this.words.filter(w=>this._isLearned(w.w)).length;
+      const seen=Object.keys(this.srs).length;
+      base.stLearned=learned; base.stSeen=seen; base.stTotal=total;
+      base.stStars=this.stars.size; base.stRead=this.readSet.size; base.stStoriesTotal=this.stories.length;
+      base.stStreak=this.streak;
+      const avg=(arr)=>arr.length?Math.round(arr.reduce((a,b)=>a+b.p,0)/arr.length):0;
+      base.stQuizAvg=avg(this.history.quiz); base.stQuizN=this.history.quiz.length;
+      base.stDictAvg=avg(this.history.dict); base.stDictN=this.history.dict.length;
+      base.stGoalToday=this._todayCount(); base.stGoal=this.goal; base.stGoalPct=Math.min(100,Math.round(this._todayCount()/this.goal*100));
+      // 7-day activity bars
+      const days=[]; let maxV=1;
+      for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*864e5); const k=d.toISOString().slice(0,10); const v=this.activity[k]||0; if(v>maxV)maxV=v; days.push({v, label:['อา','จ','อ','พ','พฤ','ศ','ส'][d.getDay()]}); }
+      base.stDays=days.map(d=>({label:d.label, h:Math.max(4,Math.round(d.v/maxV*90)), v:d.v, bg:d.v>0?A:'rgba(var(--ink-rgb),.1)'}));
+      base.setGoal20=()=>this.setGoal(10); base.setGoal30=()=>this.setGoal(20); base.setGoal50=()=>this.setGoal(30);
+      base.goalOpts=[10,20,30,50].map(g=>({n:g, pick:()=>this.setGoal(g), bg:g===this.goal?A:'var(--surface)', fg:g===this.goal?'#fff':'var(--ink)', border:g===this.goal?A:'rgba(var(--ink-rgb),.14)'}));
+    }
+
+    return base;
+  }
+}
+</script>
+</body>
+</html>
